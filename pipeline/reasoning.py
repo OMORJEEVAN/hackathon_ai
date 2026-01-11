@@ -1,43 +1,36 @@
 import torch
-from transformers import AutoTokenizer, AutoModel
-from model.consistency_model import ConsistencyClassifier
+from sentence_transformers import SentenceTransformer
+from model.consistency_model import ConsistencyModel
+from pipeline.pathway_store import retrieve_evidence
 
-tokenizer = AutoTokenizer.from_pretrained(
-    "sentence-transformers/all-MiniLM-L6-v2"
-)
-encoder = AutoModel.from_pretrained(
-    "sentence-transformers/all-MiniLM-L6-v2"
-)
+# ✅ Use the SAME encoder used in training
+embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
-def embed(text):
-    inputs = tokenizer(
-        text,
-        return_tensors="pt",
-        truncation=True,
-        padding=True
+def load_model():
+    model = ConsistencyModel(input_dim=384)
+    model.load_state_dict(
+        torch.load("model/saved_model/model.pt", map_location="cpu")
     )
+    model.eval()
+    return model
+
+def evaluate_claim(claim_text, store, model):
+    # ---- Embed the CLAIM (not the evidence) ----
+    emb = embedder.encode([claim_text])
+    emb = torch.tensor(emb, dtype=torch.float32)
+
     with torch.no_grad():
-        return encoder(**inputs).last_hidden_state.mean(dim=1)
+        score = model(emb).item()
 
-model = ConsistencyClassifier()
-model.load_state_dict(
-    torch.load("model/saved_model/model.pt", map_location="cpu")
-)
-model.eval()
-
-def evaluate_claim(claim, index):
-    query_vec = embed(claim).numpy()[0]
-    results = index.search(query_vec, k=5)
-
-    passages = [r["text"] for r in results]
-    combined_context = " ".join(passages)
-
-    score = model(embed(combined_context)).item()
     label = 1 if score >= 0.5 else 0
+
+    # ---- Retrieve evidence separately ----
+    passages = retrieve_evidence(claim_text, store, top_k=5)
 
     rationale = {
         "decision": "Consistent" if label else "Contradicted",
         "confidence": round(score, 3),
         "evidence_passages": passages
     }
+
     return label, rationale
