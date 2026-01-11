@@ -1,11 +1,10 @@
 import torch.nn as nn
 
-class ConsistencyClassifier(nn.Module):
-    def __init__(self):
-        super(ConsistencyClassifier, self).__init__()
-        self.linear = nn.Linear(384, 1)  
-        self.sigmoid = nn.Sigmoid() 
+class ConsistencyModel(nn.Module):
+    def __init__(self, input_dim=384):
+        super().__init__()
+        self.linear = nn.Linear(input_dim, 1)
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-        x = self.linear(x)
-        return self.sigmoid(x)
+        return self.sigmoid(self.linear(x))
