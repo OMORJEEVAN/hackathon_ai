@@ -14,7 +14,7 @@ def chunk_text(text, size=400):
         for i in range(0, len(words), size)
     ]
 
-def build_novel_index(novel_path):
+def build_novel_store(novel_path):
     text = open(novel_path, encoding="utf-8").read()
     chunks = chunk_text(text)
 
