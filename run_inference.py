@@ -5,10 +5,10 @@ from pipeline.reasoning import evaluate_claim, load_model
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-NOVEL_PATH = os.path.join(BASE_DIR, "data", "novel.txt")
-CSV_PATH = os.path.join(BASE_DIR, "data", "train.csv")
-MODEL_PATH = os.path.join(BASE_DIR, "model", "saved_model", "model.pt")
-OUTPUT_PATH = os.path.join(BASE_DIR, "test.csv")
+NOVEL_PATH ="data/In search of the castaways.txt"
+CSV_PATH =  "data/train.csv"
+MODEL_PATH = "model/saved_model/model.pt"
+OUTPUT_PATH = "test.csv"
 
 print("📖 Building novel store...")
 store = build_novel_store(NOVEL_PATH)
