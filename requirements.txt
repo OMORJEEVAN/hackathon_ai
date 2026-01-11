@@ -1,0 +1,9 @@
+torch
+transformers
+sentence-transformers
+pandas
+numpy
+pathway
+fastapi
+uvicorn
+python-multipart
