@@ -33,7 +33,7 @@ for _, row in df.iterrows():
     results.append({
         "character": row["char"],
         "claim": row["caption"],
-        "judgment": "Consistent" if label else "Contradicted",
+        "judgment": "Consistent(1)" if label else "Contradicted(0)",
         "confidence": rationale["confidence"],
         "evidence": " || ".join(rationale["evidence_passages"][:2])
     })
