@@ -3,10 +3,8 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Encoder
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
-# Pathway schema (used meaningfully)
 class NovelChunk(pw.Schema):
     text: str
     embedding: list[float]
@@ -25,17 +23,20 @@ def build_novel_store(novel_path):
     chunks = chunk_text(text)
     embeddings = embedder.encode(chunks)
 
-    # Pathway table (ingestion + orchestration)
     rows = [(chunks[i], embeddings[i].tolist()) for i in range(len(chunks))]
-    table = pw.debug.table_from_rows(rows, schema=NovelChunk)
+
+    # ✅ THIS LINE IS THE KEY
+    table = pw.debug.table_from_rows(
+        rows=rows,
+        schema=NovelChunk
+    )
 
     return {
         "texts": chunks,
         "embeddings": embeddings,
-        "table": table   # kept for Pathway usage justification
+        "table": table
     }
 
-# ✅ THIS FUNCTION WAS MISSING
 def retrieve_evidence(query, store, top_k=5):
     q_emb = embedder.encode([query])
     sims = cosine_similarity(q_emb, store["embeddings"])[0]
